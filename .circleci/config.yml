@@ -1,0 +1,34 @@
+version: 2.1
+
+commands:
+  inspect-docker-images:
+    steps:
+      - run: docker image ls -a
+
+jobs:
+  build:
+    parameters:
+      args:
+        type: string
+        default: ''
+    machine:
+      image: ubuntu-2204:current
+      docker_layer_caching: true
+    steps:
+      - checkout
+      # Whatever you want to do
+      - run: docker info
+      - inspect-docker-images
+      - run: docker build . -t multi-stage-example:v1 << parameters.args >>
+      - inspect-docker-images
+
+
+workflows:
+  main:
+    jobs:
+      - build:
+          name: no-target
+          args: ''
+      - build:
+           name: 'specified'
+           args: '--target=builder'
